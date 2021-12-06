@@ -9,65 +9,93 @@ import Foundation
 import UIKit
 
 class customButton: UIControl {
-
-    lazy var attributedTitle: UILabel = {
-        let title = UILabel()
-        title.font = UIFont.systemFont(ofSize: 22, weight: .medium)
-        title.text = "Click Me"
-        title.textAlignment = .center
-        title.translatesAutoresizingMaskIntoConstraints = false
-        return title
-      }()
     
-    lazy var currentImage: UIImageView = {
-        let contentView = UIImageView()
-        contentView.image = UIImage(systemName: "house")
-        contentView.translatesAutoresizingMaskIntoConstraints = false
-        return contentView
-      }()
+    var attributedTitle: UILabel?
+    var currentImage: UIImageView?
     
     override init(frame: CGRect) {
-//    self.currentImage = UIImageView(frame: CGRect(x: 0, y: 0, width: frame.size.width, height: frame.size.height))
-//    self.attributeTitle = UILabel(frame: CGRect(x: 0, y: 0, width: frame.size.width, height: frame.size.height))
     super.init(frame: frame)
-    let tapGesture = UITapGestureRecognizer(target: self, action: #selector(labelTapped))
-    addGestureRecognizer(tapGesture)
-    setupView()
-    
-  }
+    self.backgroundColor = .gray
+    }
 
   required init?(coder aDecoder: NSCoder) {
     super.init(coder: aDecoder)
   }
+    
+    public func setTitle(title: String){
+        let lbl = UILabel()
+        lbl.font = UIFont.systemFont(ofSize: 15, weight: .medium)
+        lbl.text = title
+        lbl.textAlignment = .center
+        lbl.translatesAutoresizingMaskIntoConstraints = false
+        attributedTitle = lbl
+        self.addSubview(attributedTitle!)
+        setUpLayout()
 
-    @objc func labelTapped(){
-        print("Hello")
-        sendActions(for: .touchUpInside)
     }
+    
+    func setImage(image: UIImage){
+        currentImage = UIImageView(image: image, highlightedImage: nil)
+        currentImage?.translatesAutoresizingMaskIntoConstraints = false
+        self.addSubview(currentImage!)
+        setUpLayout()
+    }
+    
+    func setUpLayout(){
+        // Clear Old Constraints
+        self.clearConstraints()
+        
+        if attributedTitle != nil && currentImage != nil {
+            print("case 1")
+            NSLayoutConstraint.activate([
+            
+                        // center vertically
+                        attributedTitle!.centerYAnchor.constraint(equalTo: centerYAnchor),
+                        currentImage!.centerYAnchor.constraint(equalTo: centerYAnchor),
+            
+                        // Leading: cach trai
+                        currentImage!.leadingAnchor.constraint(equalTo: leadingAnchor, constant: (self.frame.width - ((currentImage!.image?.size.width)! + attributedTitle!.intrinsicContentSize.width))/2),
+                        // cạnh trái lbl cách cạnh phải img 0px
+                        attributedTitle!.leadingAnchor.constraint(equalTo: currentImage!.trailingAnchor)
+                    ])
+        }
+        else if attributedTitle != nil && currentImage == nil {
+            print("case 2")
+            NSLayoutConstraint.activate([
+            
+                        // center vertically
+                        attributedTitle!.centerYAnchor.constraint(equalTo: centerYAnchor),
+//                         Leading: cach trai
+                        attributedTitle!.leadingAnchor.constraint(equalTo: leadingAnchor, constant: (self.frame.width -  attributedTitle!.intrinsicContentSize.width)/2),
+//                        attributedTitle!.centerXAnchor.constraint(equalTo: centerXAnchor)
+                        // cạnh trái lbl cách cạnh phải img 0px
+                    ])
+        }
+    
+        else if attributedTitle == nil && currentImage != nil {
+            print("case 3")
+            NSLayoutConstraint.activate([
+                currentImage!.centerYAnchor.constraint(equalTo: centerYAnchor),
+                currentImage!.centerXAnchor.constraint(equalTo: centerXAnchor)
+            ])
+        }
+        else {
+            return
+        }
+    }
+    
+    
+}
 
-  private func setupView() {
-    self.addSubview(attributedTitle)
-    self.addSubview(currentImage)
-  }
+extension UIView {
 
-    private func setUpLayout(){
-        NSLayoutConstraint.activate([
-            currentImage.leadingAnchor.constraint(equalTo: leadingAnchor),
-            currentImage.trailingAnchor.constraint(equalTo: trailingAnchor),
-            currentImage.topAnchor.constraint(equalTo: topAnchor),
-            currentImage.bottomAnchor.constraint(equalTo: bottomAnchor),
-            
-            
-            attributedTitle.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 40),
-            attributedTitle.trailingAnchor.constraint(equalTo: trailingAnchor),
-            attributedTitle.topAnchor.constraint(equalTo: topAnchor),
-            attributedTitle.bottomAnchor.constraint(equalTo: bottomAnchor)
-            
-            
-            
-        ])
-    }
-    override class var requiresConstraintBasedLayout: Bool {
-        return true
-    }
+    /**
+     Removes all constrains for this view
+     */
+    func clearConstraints() {
+            for subview in self.subviews {
+                subview.clearConstraints()
+            }
+            self.removeConstraints(self.constraints)
+        }
 }
